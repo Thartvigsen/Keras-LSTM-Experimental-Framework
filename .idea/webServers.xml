@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="ddaa22d0-2b66-4004-9581-c8216aaa71f3" name="shark1" url="http://shark1.cs.wpi.edu">
+        <fileTransfer host="shark1.cs.wpi.edu" port="22" rootFolder="/home/twhartvigsen/" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
