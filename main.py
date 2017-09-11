@@ -23,12 +23,21 @@ def run_experiments(arguments):
                                    nodes=arguments.nodeList,
                                    modelType=arguments.modelType)
 
-    experimental_summary = [arguments.modelType, arguments.epochs, arguments.nodeList]
+    experimental_summary = [arguments.modelType, arguments.window_size, arguments.epochs, arguments.nodeList]
+    
+#    processor.data = processor.data[:, 0:1500, :]    
+    for i in range(processor.data.shape[0]):
+        processor.data[i] = np.where(np.isnan(processor.data[i]), np.ma.array(processor.data[i], mask=np.isnan(processor.data[i])).mean(axis=0), processor.data[i])
 
+    processor.data = processor.data[:, 0:1000, :]
     if arguments.window_size is not False:
-        processor.aggregate(window_size=arguments.window_size)
-
+        processor.aggregate(window_size=int(arguments.window_size))
     # split the data into testing/training sets
+#    processor.data = processor.data[:, 0:5, :]
+    # take variable-wise non-zero means
+#    for i in range(processor.data.shape[0]):
+#        processor.data[i] = np.where(np.isnan(processor.data[i]), np.ma.array(processor.data[i], mask=np.isnan(processor.data[i])).mean(axis=0), processor.data[i])
+#    processor.data = processor.data[:, 0:5, :]
     if arguments.experiment_type == 'train_test':
         print('\n------ Experimental Summary ------')
         print('1. Model trained on training data.\n'
@@ -38,7 +47,7 @@ def run_experiments(arguments):
         processor.data_split(proportion_training=0.8, val_set=False)
         processor.run()
         processor.evaluate()
-
+        print("Proportion positive: %0.2f" % processor.label_prop)
     if arguments.experiment_type == 'CVtrain_test':
         print('\n------------------ Experimental Summary ------------------')
         print('1. Model selected by cross-validation on the training data.\n'
@@ -65,8 +74,6 @@ def run_experiments(arguments):
                       validation_labels=processor.holdout_labels)
         processor.evaluate()
         
-    else:
-        raise ValueError('Unexpected Experiment Type.')
 
     # output_row = experimental_summary + metric_list
 
@@ -126,7 +133,7 @@ if __name__ == '__main__':
     parser.add_argument('-epoch', action='store', dest='epochs', default=10, type=int)
     parser.add_argument('-bs', action='store', dest='batch_size',
                         default=64, type=int)
-    parser.add_argument('-f', action='store', dest='filename', type=str)
+    parser.add_argument('-file', action='store', dest='filename', type=str)
     parser.add_argument('-ws', action='store', dest='window_size',
                         type=int, default=False)
     parser.add_argument('-cv', action='store', dest='cv_folds',

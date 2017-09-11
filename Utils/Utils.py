@@ -8,12 +8,9 @@ class Utils():
         import numpy as np
 
         read_path = './Data/'
-        self.data = np.load(read_path + 'datacube.npy')
-        self.labels = pd.read_csv(read_path + 'new_labels.csv', engine='c', low_memory=False)
+        self.data = np.load(read_path + 'datacube_full.npy')
+        self.labels = pd.read_csv(read_path + 'all_labels_new.csv', engine='c', low_memory=False)
         self.labels = np.array(self.labels.label)
-        print('------------')
-        print('Data Loaded.')
-        print('------------')
 
     def randomize(data, labels):
         """ This function shuffles the patient info and labels together since
@@ -40,9 +37,6 @@ class Utils():
         """
         import numpy as np
         import math
-        print('\n--------------------------')
-        print('Averaging in groups of %i.' % window_size)
-        print('--------------------------')
         # convert 0's to nans for nanmean
         self.data[self.data == 0] = np.nan
 
@@ -57,7 +51,6 @@ class Utils():
 
         # convert nans to 0's for models
         self.data = np.nan_to_num(new_cube)
-
     def data_split(self, proportion_training, val_set):
         """
         Split data into training/testing set.
@@ -82,7 +75,7 @@ class Utils():
         self.training_labels = np.array(list(compress(self.labels, msk)))
         self.validation_data = self.data[~msk, :, :]
         self.validation_labels = np.array(list(compress(self.labels, ~msk)))
-
+        self.label_prop = 1 - float(sum(self.validation_labels)/len(self.validation_labels))
         if val_set:
             msk = np.random.rand(self.training_data.shape[0]) < proportion_training
 
@@ -159,8 +152,8 @@ class Utils():
                       optimizer='adam',
                       metrics=['accuracy'])
 
-        # model.summary()
-        earlyStopping = EarlyStopping(monitor='val_loss', patience=0, verbose=0,
+#        model.summary()
+        earlyStopping = EarlyStopping(monitor='val_loss', patience=5, verbose=0,
                                       mode='auto')
         self.history = model.fit(x=self.training_data, y=self.training_labels,
                                  epochs=self.epochs, batch_size=self.batch_size,
@@ -189,7 +182,6 @@ class Utils():
 
         kf = KFold(n_splits=k, shuffle=False)
         metric_list = []
-        print(self.modelType)
         for train_index, test_index in kf.split(X=self.training_data):
             X_train, X_test = self.training_data[train_index], self.training_data[test_index]
             y_train, y_test = self.training_labels[train_index], self.training_labels[test_index]
@@ -215,7 +207,6 @@ class Utils():
         accuracy = sklearn.metrics.accuracy_score(self.validation_labels, self.y_pred)
 
         self.evaluation_metrics = [auc, f1, prec, recall, accuracy]
-
         # return(evaluation_metrics)
 
     def file_writer(self, filename, experimental_summary):
@@ -227,7 +218,7 @@ class Utils():
         """
         import csv
 
-        output_row = experimental_summary + self.evaluation_metrics
+        output_row = experimental_summary + self.evaluation_metrics + [self.label_prop]
 
         with open(filename, 'a') as f:
             writer = csv.writer(f, delimiter=',')
