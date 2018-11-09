@@ -1,5 +1,7 @@
 # An experimental framework for running LSTM experiments.
 
+*This repository is no longer in use, I have since learned a lot and moved to PyTorch - Tom, 11.09.2018*
+
 This Python code was used for the 2017 WPI Data Science REU Machine Learning for Healthcare Group. The framework is focused on LSTM's, particularly for training on Multivariate Clinical Time Series.
 
 The *run.sh* file controls the hyperparameters for the LSTMs, and the *main.py* file controls the pipeline of data processing from a raw 3D tensor in the shape of (instances, timesteps, variables) to final predictions with multiple evaluation metrics.
